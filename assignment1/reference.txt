@@ -1,6 +1,12 @@
 TCP ??
 
-HTTP ?? More important !!!!!!!
+REST API vs HTTP ???
+
+What is HTTP? How the Internet Works! #1
+https://www.youtube.com/watch?v=wW2A5SZ3GkI
+
+HTTP Crash Course & Exploration
+https://www.youtube.com/watch?v=iYM2zFP3Zn0
 
 Why most TCP servers are multi threaded and how to build one from scratch
 https://www.youtube.com/watch?v=f9gUFy-9uCM

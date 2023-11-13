@@ -41,14 +41,14 @@ type serverFd struct {
 	NetworkType string							/* from config */
 	Port string									/* from config */
 	MaxReq int64								/* from config */
-	WaitConnMax int64							/* from config*/
-	ReqMsgHandler ConnReqHandler				/* from config*/
-	IsStop IsServerStopRequest					/* from config*/
+	WaitConnMax int64							/* from config */
+	ReqMsgHandler ConnReqHandler				/* from config */
+	IsStop IsServerStopRequest					/* from config */
 	Addr string									/* IP address: "127.0.0.1:1728" */
 	ReqCount int64								/* current number of request that are currently handled in parallel */
 	ReqCountLock sync.Mutex						/* since ReqCount is shared and modified between various connection (gorountines) it needs to be protected (atomic operations) */
 	// WaitConnBuffer []Connection				/* all waiting connections are stored here */
-	Listner net.Listener						/* the s*/
+	Listner net.Listener						/* the socket to listen */
 	WaitConnQueue *queue.Queue[*Connection]		/* connection FIFO that are waiting to be handle */
 }
 
@@ -70,7 +70,7 @@ func Create(config *ServerConfig) (serv Server, err error) {
 		WaitConnMax: config.WaitConnMax,
 		ReqMsgHandler: config.ReqMsgHandler,
 		IsStop: config.IsStop,
-		Addr: "127.0.0.1" + config.Port,			/* TOOD: In later versions it can be any generic IP */
+		Addr: "" + config.Port,			/* TOOD: In later versions it can be any generic IP */
 		WaitConnQueue: queue.New[*Connection](int(config.WaitConnMax)),
 		Listner: listner,
 	}
