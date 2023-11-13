@@ -16,6 +16,7 @@
 
 # Dependency directories (remove the comment below to include it)
 *.vscode
+.\assignment1\files
 
 # Go workspace file
 go.work
