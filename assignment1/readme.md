@@ -12,9 +12,4 @@ To test the functionality of GET, open a command prompt and use the following ex
 `curl http://127.0.0.1:1278/index.html`
 
 2. **CSS File Types**
-<<<<<<< HEAD
 `curl http://127.0.0.1:1278/css/styles.css`
-=======
-
-    $ curl http://127.0.0.1:1278/css/styles.css
->>>>>>> c35313943ffb65b24d8397b93c1fa689855cfa10
