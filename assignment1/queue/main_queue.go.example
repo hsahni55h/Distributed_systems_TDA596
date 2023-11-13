@@ -1,0 +1,22 @@
+package main
+
+import(
+	"fmt"
+)
+
+func main() {
+	// Example usage
+	stringQueue := queue.Queue[string]{}
+	stringQueue.Enqueue("first")
+	stringQueue.Enqueue("second")
+	stringQueue.Enqueue("third")
+
+	for !stringQueue.IsEmpty() {
+		item, err := stringQueue.Dequeue()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		fmt.Printf("Dequeued: %s\n", item)
+	}
+}

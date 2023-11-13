@@ -1,0 +1,221 @@
+package server
+
+import (
+	"fmt"
+	"io"
+	"log"
+	"net"
+	"sync"
+)
+
+type ConnectionHandler func(connection *Connection, err *error)
+
+// TODO: fix this definition after better understanding of http
+type Message struct {
+	Buff []byte
+	// header []byte
+	// payload []byte
+}
+
+type Connection struct {
+	stream net.Conn
+	Msg *Message
+}
+
+func (connection *Connection) ReadMessage() (n int, err error) {
+    // read the rx packet into buffer
+    n, err = connection.stream.Read(connection.Msg.Buff)
+    if err == io.EOF {
+        // Handle connection closed gracefully
+        return n, err
+    }
+    return n, err
+}
+
+func (connection *Connection) WriteMessage() (n int, err error) {
+    // read the rx packet into buffer
+    n, err = connection.stream.Write(connection.Msg.Buff)
+    if err == io.EOF {
+        // Handle connection closed gracefully
+        return n, err
+    }
+    return n, err
+}
+
+func (connection *Connection) RemoteAddrNetwork() string {
+	return connection.stream.RemoteAddr().Network()
+}
+
+func (connection *Connection) RemoteAddr() string {
+	return connection.stream.RemoteAddr().String()
+}
+
+type _server struct {
+	network_type string
+	port string
+	maxConnections int64
+	connectionBuffSize int64
+	connectionHandler ConnectionHandler
+	listner net.Listener
+	HandlingCount int64
+	handlingCountMutex sync.Mutex
+	waitConnection []Connection
+	waitQueue []Connection
+	waitQueueMutex sync.Mutex
+}
+
+type Server struct {
+	id int64
+	fd *_server
+}
+
+// TODO: add more
+// Assumption: Max waiting connections in a queue is equal to max number of connections to handle in parallel
+type ServerConfig struct {
+	Id int64
+	Network_type string
+	Port string
+	MaxConnections int64
+	ConnectionBuffSize int64
+	ConnectionHandler ConnectionHandler
+}
+
+type IsServerStopRequest func(server Server) bool
+
+
+func Create(config *ServerConfig) (Server, error) {
+	listner, err := net.Listen(config.Network_type, config.Port)
+	if err != nil {
+		return Server{-1, nil}, err
+	}
+
+	wait_conn_list := make([]Connection, config.MaxConnections)
+	for i := 0; i < int(config.MaxConnections); i++ {
+		wait_conn_list[i].Msg = &Message{
+									Buff : make([]byte, config.ConnectionBuffSize),
+								}
+	}
+
+	_server_fd := &_server{
+		network_type: config.Network_type,
+		port: config.Port,
+		maxConnections: config.MaxConnections,
+		connectionBuffSize: config.ConnectionBuffSize,
+		connectionHandler: config.ConnectionHandler,
+		listner: listner,
+		HandlingCount: 0,
+		waitConnection: wait_conn_list,
+		waitQueue: wait_conn_list[0:0],
+	}
+	
+	server := Server{
+		id: config.Id,
+		fd: _server_fd,
+	}
+	return server, nil
+}
+
+func logAndExitIfError(err error, expected error) {
+	if err != expected {
+		log.Fatal(err)
+	}
+}
+
+func (server Server) enQueueWaitingConnection(stream net.Conn) {
+    server.fd.waitQueueMutex.Lock()
+    defer server.fd.waitQueueMutex.Unlock()
+
+    server.fd.waitConnection[len(server.fd.waitQueue)].stream = stream
+    server.fd.waitQueue = server.fd.waitQueue[:len(server.fd.waitQueue)+1]
+    fmt.Println("New connection:", stream.RemoteAddr().String())
+    fmt.Println("Waiting Queue:", len(server.fd.waitQueue))
+}
+
+func (server Server) deQueueWaitingConnection() *Connection {
+    server.fd.waitQueueMutex.Lock()
+    defer server.fd.waitQueueMutex.Unlock()
+
+    var connection *Connection
+    if len(server.fd.waitQueue) > 0 {
+        connection = &(server.fd.waitQueue[0])
+        server.fd.waitQueue = server.fd.waitQueue[1:]
+    }
+    if len(server.fd.waitQueue) == 0 {
+        server.fd.waitQueue = server.fd.waitConnection[0:0]
+    }
+    fmt.Println("Old connection:", connection)
+    fmt.Println("Waiting Queue:", len(server.fd.waitQueue))
+    return connection
+}
+
+func (server Server) IsWaitingQueueFull() bool {
+    server.fd.waitQueueMutex.Lock()
+    defer server.fd.waitQueueMutex.Unlock()
+
+    return len(server.fd.waitQueue) >= int(server.fd.maxConnections)
+}
+
+func (server Server) IsWaitingQueueEmpty() bool {
+    server.fd.waitQueueMutex.Lock()
+    defer server.fd.waitQueueMutex.Unlock()
+
+    return len(server.fd.waitQueue) == 0
+}
+
+func ServerStopRequestNone(server Server) bool {
+	return false
+}
+
+// a blocking call to run which runs infinitely
+func (server Server) Run(isStop IsServerStopRequest) bool {
+	if isStop == nil {
+		isStop = ServerStopRequestNone
+	}
+
+	stop := false
+	var wgroup sync.WaitGroup	// used to wait for all the goroutines launched here to finish
+
+	for !stop {
+		// if waiting queue is NOT full then enqueue new connection to waiting queue
+		if !server.IsWaitingQueueFull() {
+			// wait until a new connection is establish - make a blocking call
+			stream, err := server.fd.listner.Accept()
+			logAndExitIfError(err, nil)
+
+			server.enQueueWaitingConnection(stream)
+		}
+
+		// if connections handling is count < max value then dequeue connection from waiting queue and handle it
+		server.fd.handlingCountMutex.Lock()
+		canHandleRequest := server.fd.HandlingCount < server.fd.maxConnections
+		server.fd.handlingCountMutex.Unlock()
+
+		if (canHandleRequest) {
+			server.fd.handlingCountMutex.Lock()
+			wgroup.Add(1)
+			server.fd.HandlingCount++
+			server.fd.handlingCountMutex.Unlock()
+			
+			go func() {
+				defer wgroup.Done()
+				
+				var connection *Connection = server.deQueueWaitingConnection()
+				defer connection.stream.Close()
+								
+				var err error
+				server.fd.connectionHandler(connection, &err)
+				server.fd.handlingCountMutex.Lock()
+				server.fd.HandlingCount--
+				server.fd.handlingCountMutex.Unlock()
+
+				logAndExitIfError(err, nil)
+			}()
+		}
+
+		// if waiting queue is empty and server stop condition then stop
+		stop = isStop(server) && server.IsWaitingQueueEmpty()
+	}
+
+	wgroup.Wait()
+	return stop
+}

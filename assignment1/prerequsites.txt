@@ -1,0 +1,29 @@
+Prerequsites
+
+Concepts
+- server
+- client
+- HTTP
+	- RFC 1945 standard
+- GET, POST method
+- how to run run server on dynamic IP address
+- TCP connection
+- proxy
+- socket
+- 
+
+Skills
+- GO language
+	- produce binary file from .go file
+	- concurrent programming
+		- new go routine (new child process, max. 10) for each client request
+	- `net` package for networking
+		- eg: `net.Listen("tcp", address)` to listen for incoming TCP connections.
+	- `net/http` package 
+		- ONLY for parsing and working with HTTP request objects.
+		- NOT the networking part. 
+		- You should not use e.g., `http.ListenAndServe` which trivializes the assignment (the same goes for `http.Listen`, and `http.Serve`). 
+		- You should NOT use any Proxy method from the http package (http.Proxy). 
+- Docker (to isolate, package it and execute)
+- AWS (for could service)
+
