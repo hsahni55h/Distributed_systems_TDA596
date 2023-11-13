@@ -2,7 +2,7 @@
 
 To run the `main.go` file with a specific port number, use the following command:
 
-go run main.go -v 1278
+go run main.go -p 1278
 
 # Testing the Functionality of GET
 
