@@ -14,8 +14,17 @@ To test the functionality of GET, open a command prompt and use the following ex
 2. **CSS File Types**
 `curl http://127.0.0.1:1278/css/styles.css`
 
-Example to test the functionality of POST
+
+To test the functionality of POST, use the following example:
 
 `curl -X POST -H "Content-Type: text/plain" DEF "%i" http://127.0.0.1:1278/data/vipNames.txt`
 
+# GET command to run n clients in parallel on a single command prompt without blocking it
 
+To run multiple GET requests in parallel on a single command prompt without blocking it, use the following command (for Windows command prompt):
+
+`for /L %i in (1, 1, 20) do start /b curl http://127.0.0.1:1278/data/vipNames.txt`
+
+
+
+ 
