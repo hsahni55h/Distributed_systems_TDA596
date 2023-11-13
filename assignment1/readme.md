@@ -18,7 +18,7 @@ To test the functionality of GET, open a command prompt and use the following ex
 
 To test the functionality of POST, use the following example:
 
-`curl -X POST -H "Content-Type: text/plain" DEF "%i" http://127.0.0.1:1278/data/vipNames.txt`
+`curl -X POST -H "Content-Type: text/plain" -d DEF http://127.0.0.1:1278/data/vipNames.txt`
 
 # GET command to run n clients in parallel on a single command prompt without blocking it
 
@@ -31,5 +31,10 @@ POST command to run n clients in parallel on single command prompt without block
 `for %i in (GHI, JKL, MNO, PQR, STQ, UVW, XYZ) do start /b curl -X POST -H "Content-Type: text/plain" -d "%i" http://127.0.0.1:1278/data/vipNames.txt`
 
 
+%%%%% Try to GET html file from server using a proxy
+curl -X GET 127.0.0.1:1278/index.html -x 127.0.0.1:1279
 
- 
+%%%%% BUT when you try to POST data to a file on server using a proxy, the proxy will NOT handle it an say: 
+%%%%% ---> "Only GET requests are supported"
+curl -X POST -H "Content-Type: text/plain" -d DEF http://127.0.0.1:1278/data/vipNames.txt -x 127.0.0.1:1279
+
