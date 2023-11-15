@@ -26,6 +26,9 @@ To run multiple GET requests in parallel on a single command prompt without bloc
 
 `for /L %i in (1, 1, 20) do start /b curl http://127.0.0.1:1278/data/vipNames.txt`
 
+If you wish to store the response in a file, use the following command (for Windows command prompt):
+`for /L %i in (1, 1, 20) do start /b curl http://127.0.0.1:1278/data/vipNames.txt > out_%i.txt 2> info_%i.txt`
+
 POST command to run n clients in parallel on single command prompt without blocking it
 
 `for %i in (GHI, JKL, MNO, PQR, STQ, UVW, XYZ) do start /b curl -X POST -H "Content-Type: text/plain" -d "%i" http://127.0.0.1:1278/data/vipNames.txt`
