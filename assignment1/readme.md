@@ -1,8 +1,18 @@
-# Running the `main.go` File
+# Running the `main.go` File (same applies for `proxy_main.go`)
 
-To run the `main.go` file with a specific port number, use the following command:
+To run the `main.go` file with a specific port number (say `1278`), use the following command:
 
-go run main.go -p 1278
+`go run main.go -p 1278`
+
+# Building and running the `main.exe` File (same applies for `proxy_main.go`)
+
+To build the `main.exe` file from `main.go`, use the following command:
+
+`go build main.go`
+
+To run the `main.exe` file with a specific port number (say `1278`), use the following command:
+
+`main.exe -p 1278`
 
 # Testing the Functionality of GET
 
