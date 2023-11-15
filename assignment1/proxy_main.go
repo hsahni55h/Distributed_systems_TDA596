@@ -11,49 +11,41 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"strings"
+	"time"
 )
 
 func forwardRequest(request *server.Message, response *server.Message) error {
-	// Parse the HTTP request
+	/*	reads and parses an incoming HTTP request from buffer
+		bufio wraps an existing bytes.Reader type (that implements io.Reader interface's Read() function) and provide buffering for it. 
+		Buffering imporves performance since it reduces the number of actual reads from the underlying io.Reader (bytes.Reader in our case)
+	*/
 	httpRequest, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(request.Buff)))
 	if err != nil {
 		response.Buff = []byte("HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nInvalid HTTP request format")
 		return err
 	}
 
-	// Only handle GET requests
+	/* Only handle GET requests */
 	if httpRequest.Method != http.MethodGet {
 		response.Buff = []byte("HTTP/1.1 501 Not Implemented\r\nContent-Type: text/plain\r\n\r\nOnly GET requests are supported")
 		return nil
 	}
 
-	// Extract the host and port from the request
-	host := httpRequest.URL.Host
-	port := "80" // Default port for HTTP
-
-	// Split host and port
-	if strings.Contains(host, ":") {
-		parts := strings.Split(host, ":")
-		host = parts[0]
-		port = parts[1]
-	}
-
-	// Create a connection to the remote server
-	remoteConn, err := net.Dial("tcp", host+":"+port)
+	/* Create a connection to the remote server */
+	remoteConn, err := net.Dial("tcp", httpRequest.URL.Host)
 	if err != nil {
 		response.Buff = []byte("HTTP/1.1 502 Bad Gateway\r\nContent-Type: text/plain\r\n\r\nError connecting to the remote server")
 		return err
 	}
 	defer remoteConn.Close()
 
-	// Forward the GET request to the remote server
+	/* Forward the GET request to the remote server */
 	if err := httpRequest.Write(remoteConn); err != nil {
 		response.Buff = []byte("HTTP/1.1 502 Bad Gateway\r\nContent-Type: text/plain\r\n\r\nError forwarding the request")
 		return err
 	}
 
-	// Read the response from the remote server
+	/* Read the response from the remote server */
 	remoteResp, err := http.ReadResponse(bufio.NewReader(remoteConn), httpRequest)
 	if err != nil {
 		response.Buff = []byte("HTTP/1.1 502 Bad Gateway\r\nContent-Type: text/plain\r\n\r\nError reading the remote server response")
@@ -61,7 +53,7 @@ func forwardRequest(request *server.Message, response *server.Message) error {
 	}
 	defer remoteResp.Body.Close()
 
-	// Forward the response to the client
+	/* Forward the response to the client */
 	responseBuf, err := httputil.DumpResponse(remoteResp, true)
 	if err != nil {
 		response.Buff = []byte("HTTP/1.1 502 Bad Gateway\r\nContent-Type: text/plain\r\n\r\nError reading the remote server response")
@@ -70,6 +62,12 @@ func forwardRequest(request *server.Message, response *server.Message) error {
 	
 	response.Buff = responseBuf
 	return nil
+}
+
+func logAndExitIfError(err error, expected error) {
+	if err != expected {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -94,13 +92,16 @@ func main() {
 	config.Port = ":" + config.Port
 
 	proxyServer, err := server.Create(config)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logAndExitIfError(err, nil)
 
+	go func() {
+		err = proxyServer.Run()
+		logAndExitIfError(err, nil)
+	}()
 	fmt.Println("Proxy server is running. Waiting for client requests...")
-	err = proxyServer.Run()
-	if err != nil {
-		log.Fatal(err)
+
+	/* sleep infinitely since there is nothing else to do */
+	for {
+		time.Sleep(time.Second)
 	}
 }
