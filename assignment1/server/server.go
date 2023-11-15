@@ -17,7 +17,7 @@ func IsServerStopRequestNever(server *Server) bool {
 
 type Message struct {
 	Node string					/* Node which sends or receives the message */
-	Buff []byte					/* TODO: Message definition may change in the future, may be depending on packet */
+	Buff []byte					/* Buffeer to store the received data */
 }
 
 type Connection struct {
