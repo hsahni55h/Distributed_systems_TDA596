@@ -14,4 +14,13 @@ https://www.youtube.com/watch?v=f9gUFy-9uCM
 How To Build A Custom TCP Server In Golang!?
 https://www.youtube.com/watch?v=qJQrrscB1-4
 
+Exta Theory:
+What is OSI Model | Real World Examples
+https://www.youtube.com/watch?v=0y6FtKsg6J4
+
+OSI Model Deep Dive
+https://www.youtube.com/watch?v=oVVlMqsLdro
+
+Networking playlist | Ben Eater
+https://www.youtube.com/watch?v=XaGXPObx2Gs&list=PLowKtXNTBypH19whXTVoG3oKSuOcw_XeW
 
