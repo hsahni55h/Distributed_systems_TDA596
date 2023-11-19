@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 // sum function accepts a variable number of integers and returns their sum.
-func sum(numbers ...int) int {
+func sum(numbers ...int) int { // this is an example of varadic function
 	total := 0
 	for _, num := range numbers {
 		total += num
