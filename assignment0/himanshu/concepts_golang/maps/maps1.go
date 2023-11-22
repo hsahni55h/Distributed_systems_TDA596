@@ -4,7 +4,8 @@ import "fmt"
 
 func main() {
 	// Creating and initializing maps
-	// employeeSalary := make(map[string]int)
+	// var name_of_the_map map [keyType]valyetype
+	
 	fruitsColor := map[string]string{
 		"apple":  "red",
 		"banana": "yellow",
