@@ -21,6 +21,6 @@ func main() {
 	(*p)[4] = 88
 	fmt.Println(s2)
 
-	// fmt.Println(s1) // [1 99 3]
-	// fmt.Println(s2) // [0 0 42 0 88]
+	fmt.Println(s1) // [1 99 3]
+	fmt.Println(s2) // [0 0 42 0 88]
 }
