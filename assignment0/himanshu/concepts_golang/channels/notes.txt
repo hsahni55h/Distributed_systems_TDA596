@@ -1,0 +1,11 @@
+A channel in Go is a typed conduit through which you can send and receive values with the channel operator <-. 
+Channels provide a way for goroutines to communicate and synchronize their execution.
+
+Channels are declared using the make function with the chan keyword.
+ch := make(chan int)
+
+
+The <- operator is used for sending and receiving values on a channel.
+
+ch <- 42 // Send 42 to the channel
+value := <-ch // Receive a value from the channel and assign it to 'value'
