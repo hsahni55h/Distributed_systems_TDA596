@@ -62,7 +62,8 @@ func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string)
 		switch task.Type {
 		case TaskDone:
 			// If the task is marked as DONE, sleep for a short duration and continue.
-			return
+			time.Sleep(1 * time.Second)
+			break
 		case TaskWait:
 			// If the task is in WAIT state, sleep for a shorter duration and continue.
 			time.Sleep(10 * time.Millisecond)
@@ -215,7 +216,7 @@ func SendFinish(t Task) bool {
 // usually returns true.
 // returns false if something goes wrong.
 func call(rpcname string, args interface{}, reply interface{}) bool {
-	c, err := rpc.DialHTTP("tcp", "3.87.99.235"+":1234")
+	c, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")
 	// sockname := coordinatorSock()
 	// c, err := rpc.DialHTTP("unix", sockname)
 	if err != nil {

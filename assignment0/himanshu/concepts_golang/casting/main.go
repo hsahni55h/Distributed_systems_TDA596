@@ -14,11 +14,11 @@ func main() {
 	pl(cv2)
 
 	cv3 := "5000000"
-	cv4, err := strconv.Atoi(cv3)
+	cv4, err := strconv.Atoi(cv3) // ASCII to Integers
 	pl(cv4, err, reflect.TypeOf(cv4))
 
 	cv5 := 5000000
-	cv6 := strconv.Itoa(cv5)
+	cv6 := strconv.Itoa(cv5) // Integer to ASCII
 	pl(cv6)
 
 	cv7 := "3.14"
@@ -29,4 +29,3 @@ func main() {
 	cv9 := fmt.Sprintf("%f", 3.14)
 	pl(cv9)
 }
-
