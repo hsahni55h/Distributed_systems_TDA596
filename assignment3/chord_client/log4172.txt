@@ -1,0 +1,1 @@
+2024/01/10 22:36:47 Node started 34.207.73.204:4172 with secure port: 0
